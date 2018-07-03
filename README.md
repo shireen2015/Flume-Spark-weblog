@@ -343,7 +343,35 @@ spark-submit --class FlumeStreamingDepartmentCount --master yarn --jars spark-st
 ----------------------------------------------------------------------------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------------------------------------------------------------------------
 
-** Error **
+## Screenshots
+
+1. Output saved to S3
+
+  ![alt text](images/output.png)
+  ![alt text](images/output.png)
+  
+2. Count the number of department categories accessed in every 10 secs of time  
+ 
+  ![alt text](images/output.png)
+  ![alt text](images/output.png)
+  
+3. Display number of times hosts who made requests to the server in every 10 secs
+
+   ![alt text](images/output.png)
+   
+4. Find Total count of different response codes returned by the server per 10 secs
+
+   ![alt text](images/output.png)
+   
+## Future Possibilities
+
+As output data is being stored continuously in S3,
+
+1. We can connect this data to Web UIs like Splunk and generate dashboards
+
+2. We can send product recommendations to customers based on their search history
+
+## ** Error **
 
 // Issue 1
 
