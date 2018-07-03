@@ -1,14 +1,34 @@
 # flume-spark-weblog
 
-CASE STUDY: ANALYSIS ON WEBSERVER LOGS USING FLUME AND INTEGRATION
+Log analysis using Flume, Spark streaming & saving results to S3
 
-****************************************************************************
+## Objective
 
-EMR Cluster details
+To build an application which can monitor user browsing history continously using Spark and save results to S3
+
+## Data description
+ 
+1. Data is a streaming log data which comprises of login, browsing details of an e-commerce website.
+
+2. Consists information of IP address, categories, browser used, operating system specifications etc
+
+   ![alt text](images/output.png)
+   
+## Tools & Technologies used
+ 
+ Best suited technologies:
+
+1. Apache Flume
+
+2. Apache Spark
+
+3. Amazon S3   
+
+## EMR Cluster details
 
 EMR version: 5.10.0
 
-Cluster name: Bootcamp_Spark2
+Cluster name: Spark2
 
 DNS: ec2-34-219-135-32.us-west-2.compute.amazonaws.com
 
@@ -144,8 +164,8 @@ sudo ln -s /opt/gen_logs/tail_logs.sh /usr/bin/tail_logs.sh
 
 JARs link: https://mvnrepository.com/artifact/org.apache.spark/spark-streaming-flume-sink_2.11/2.2.0
            https://mvnrepository.com/artifact/org.apache.spark/spark-streaming-flume_2.11/2.2.0
-		   http://search.maven.org/remotecontent?filepath=org/scala-lang/scala-library/2.11.8/scala-library-2.11.8.jar
-		   http://search.maven.org/remotecontent?filepath=org/apache/commons/commons-lang3/3.5/commons-lang3-3.5.jar
+	   http://search.maven.org/remotecontent?filepath=org/scala-lang/scala-library/2.11.8/scala-library-2.11.8.jar
+	   http://search.maven.org/remotecontent?filepath=org/apache/commons/commons-lang3/3.5/commons-lang3-3.5.jar
 	
 
 // Terminal 1
@@ -159,49 +179,49 @@ cp commons-lang3-3.5.jar /opt/apache-flume-1.7.0-bin/lib/
 
 2. vi flume.conf
 
-# sdc.conf: A multiplex flume configuration
-# Source: log file
-# Sink 1: Unprocessed data to HDFS
-# Sink 2: Spark
+       # sdc.conf: A multiplex flume configuration
+       # Source: log file
+       # Sink 1: Unprocessed data to HDFS
+       # Sink 2: Spark
 
-# Name the components on this agent
-sdc.sources = ws
-sdc.sinks = hd spark
-sdc.channels = hdmem sparkmem
+       # Name the components on this agent
+         sdc.sources = ws
+         sdc.sinks = hd spark
+         sdc.channels = hdmem sparkmem
 
-# Describe/configure the source
-sdc.sources.ws.type = exec
-sdc.sources.ws.command = tail -F /opt/gen_logs/logs/access.log
+        # Describe/configure the source
+        sdc.sources.ws.type = exec
+        sdc.sources.ws.command = tail -F /opt/gen_logs/logs/access.log
 
-# Describe the sink
-sdc.sinks.hd.type = hdfs
-sdc.sinks.hd.hdfs.path = /user/hadoop/flume_demo
+       # Describe the sink
+        sdc.sinks.hd.type = hdfs
+        sdc.sinks.hd.hdfs.path = /user/hadoop/flume_demo
 
-sdc.sinks.hd.hdfs.filePrefix = FlumeDemo
-sdc.sinks.hd.hdfs.fileSuffix = .txt
-sdc.sinks.hd.hdfs.rollInterval = 120
-sdc.sinks.hd.hdfs.rollSize = 1048576
-sdc.sinks.hd.hdfs.rollCount = 100
-sdc.sinks.hd.hdfs.fileType = DataStream
+       sdc.sinks.hd.hdfs.filePrefix = FlumeDemo
+       sdc.sinks.hd.hdfs.fileSuffix = .txt
+       sdc.sinks.hd.hdfs.rollInterval = 120
+       sdc.sinks.hd.hdfs.rollSize = 1048576
+       sdc.sinks.hd.hdfs.rollCount = 100
+       sdc.sinks.hd.hdfs.fileType = DataStream
 
-sdc.sinks.spark.type = org.apache.spark.streaming.flume.sink.SparkSink
-sdc.sinks.spark.hostname = ip-172-31-19-34
-sdc.sinks.spark.port = 8123
+       sdc.sinks.spark.type = org.apache.spark.streaming.flume.sink.SparkSink
+       sdc.sinks.spark.hostname = ip-172-31-19-34
+       sdc.sinks.spark.port = 8123
 
-# Use a channel sdc which buffers events in memory
-sdc.channels.hdmem.type = memory
-sdc.channels.hdmem.capacity = 1000
-sdc.channels.hdmem.transactionCapacity = 100
+       # Use a channel sdc which buffers events in memory
+       sdc.channels.hdmem.type = memory
+       sdc.channels.hdmem.capacity = 1000
+       sdc.channels.hdmem.transactionCapacity = 100
 
-sdc.channels.sparkmem.type = memory
-sdc.channels.sparkmem.capacity = 1000
-sdc.channels.sparkmem.transactionCapacity = 200
+       sdc.channels.sparkmem.type = memory
+       sdc.channels.sparkmem.capacity = 1000
+       sdc.channels.sparkmem.transactionCapacity = 200
 
 
-# Bind the source and sink to the channel
-sdc.sources.ws.channels = hdmem sparkmem
-sdc.sinks.hd.channel = hdmem
-sdc.sinks.spark.channel = sparkmem
+       # Bind the source and sink to the channel
+       sdc.sources.ws.channels = hdmem sparkmem
+       sdc.sinks.hd.channel = hdmem
+       sdc.sinks.spark.channel = sparkmem
 
 
 3. Run logs generation script
@@ -221,18 +241,18 @@ Place all the 4 jars in /root directory
 
 2. vi build.sbt
 
-name := "retail"
-version := "1.0"
-scalaVersion := "2.11.8"
+       name := "retail"
+       version := "1.0"
+       scalaVersion := "2.11.8"
 
-libraryDependencies += "org.apache.spark" % "spark-core_2.11" % "2.2.0"
-libraryDependencies += "org.apache.spark" % "spark-streaming_2.11" % "2.2.0"
-libraryDependencies += "org.apache.spark" % "spark-streaming-flume_2.11" % "2.2.0"
-libraryDependencies += "org.apache.spark" % "spark-streaming-flume-sink_2.11" % "2.2.0"
-libraryDependencies += "org.scala-lang" % "scala-library" % "2.11.8"
-libraryDependencies += "org.apache.commons" % "commons-lang3" % "3.5"
+       libraryDependencies += "org.apache.spark" % "spark-core_2.11" % "2.2.0"
+       libraryDependencies += "org.apache.spark" % "spark-streaming_2.11" % "2.2.0"
+       libraryDependencies += "org.apache.spark" % "spark-streaming-flume_2.11" % "2.2.0"
+       libraryDependencies += "org.apache.spark" % "spark-streaming-flume-sink_2.11" % "2.2.0"
+       libraryDependencies += "org.scala-lang" % "scala-library" % "2.11.8"
+       libraryDependencies += "org.apache.commons" % "commons-lang3" % "3.5"
 
-press [esc] > :wq
+       press [esc] > :wq
 
 3. mkdir src > cd src > mkdir main > cd main > mkdir scala > cd scala
 
@@ -244,66 +264,67 @@ Q. Find Total count of different response codes returned by the server per 10 se
 
 vi FlumeStreamingDepartmentCount.scala
 
-import org.apache.spark.SparkConf
-import org.apache.spark.streaming.{StreamingContext,Seconds}
-import org.apache.spark.streaming.flume._
+      import org.apache.spark.SparkConf
+      import org.apache.spark.streaming.{StreamingContext,Seconds}
+      import org.apache.spark.streaming.flume._
 
-object FlumeStreamingDepartmentCount {
+      object FlumeStreamingDepartmentCount {
 
-   def main(args: Array[String]) {
+          def main(args: Array[String]) {
 
-    val conf = new SparkConf().setAppName("Flume Streaming Word Count").setMaster(args(0))
+              val conf = new SparkConf().setAppName("Flume Streaming Word Count").setMaster(args(0))
+ 
+              val ssc = new StreamingContext(conf, Seconds(10))
 
-    val ssc = new StreamingContext(conf, Seconds(10))
+          val stream = FlumeUtils.createPollingStream(ssc, args(1), args(2).toInt)
+          val messages = stream.
+          map(s => new String(s.event.getBody.array()))
+          val departmentMessages = messages.
+              filter(msg => {
+              val endPoint = msg.split(" ")(6)
+              endPoint.split("/")(1) == "department"
+           })
+           val departments = departmentMessages.
+                 map(rec => {
+                 val endPoint = rec.split(" ")(6)
+                 (endPoint.split("/")(2), 1)
+            })
+          
+	  val departmentTraffic = departments.
+                                  reduceByKey((total, value) => total + value)
+                                  departmentTraffic.saveAsTextFiles("s3://upx-bd-bootcamp/Flume_Spark/departmentcount")
 
-    val stream = FlumeUtils.createPollingStream(ssc, args(1), args(2).toInt)
-    val messages = stream.
-      map(s => new String(s.event.getBody.array()))
-    val departmentMessages = messages.
-      filter(msg => {
-        val endPoint = msg.split(" ")(6)
-        endPoint.split("/")(1) == "department"
-      })
-    val departments = departmentMessages.
-      map(rec => {
-        val endPoint = rec.split(" ")(6)
-        (endPoint.split("/")(2), 1)
-      })
-    val departmentTraffic = departments.
-      reduceByKey((total, value) => total + value)
-    departmentTraffic.saveAsTextFiles("s3://upx-bd-bootcamp/Flume_Spark/departmentcount")
-
-	val hostrequests = messages.
-      map(rec => {
-        val endPoint = rec.split(" ")(0)
-        (endPoint, 1)
-      })
+	  val hostrequests = messages.
+                map(rec => {
+                val endPoint = rec.split(" ")(0)
+                (endPoint, 1)
+           })
     
-    val requestTraffic = hostrequests.
-      reduceByKey((total, value) => total + value)
+          val requestTraffic = hostrequests.
+                               reduceByKey((total, value) => total + value)
     
-	requestTraffic.saveAsTextFiles("s3://upx-bd-bootcamp/Flume_Spark/num_of_hostrequests")
+	   requestTraffic.saveAsTextFiles("s3://upx-bd-bootcamp/Flume_Spark/num_of_hostrequests")
 	
 	
-	val responsecodes = messages.
-      map(rec => {
-        val endPoint = rec.split(" ")(8)
-        (endPoint, 1)
-      })
+	   val responsecodes = messages.
+               map(rec => {
+                val endPoint = rec.split(" ")(8)
+              (endPoint, 1)
+            })
 	
-	val responsecodesTraffic = responsecodes.
-      reduceByKey((total, value) => total + value)
+	    val responsecodesTraffic = responsecodes.
+                                       reduceByKey((total, value) => total + value)
     
-	responsecodesTraffic.saveAsTextFiles("s3://upx-bd-bootcamp/Flume_Spark/responsecodes_count")
+	     responsecodesTraffic.saveAsTextFiles("s3://upx-bd-bootcamp/Flume_Spark/responsecodes_count")
 	
 	
-    ssc.start()
-    ssc.awaitTermination()
+           ssc.start()
+           ssc.awaitTermination()
 
-  }
-}
+         }
+          }
 
-press [esc] > :wq
+        press [esc] > :wq
 
 4. cd .. > cd .. > cd..
 
