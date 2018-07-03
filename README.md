@@ -12,7 +12,7 @@ To build an application which can monitor user browsing history continously usin
 
 2. Consists information of IP address, categories, browser used, operating system specifications etc
 
-   ![alt text](images/output.png)
+   ![alt text](images/output1.png)
    
 ## Tools & Technologies used
  
@@ -347,21 +347,21 @@ spark-submit --class FlumeStreamingDepartmentCount --master yarn --jars spark-st
 
 1. Output saved to S3
 
-  ![alt text](images/output.png)
-  ![alt text](images/output.png)
+  ![alt text](images/output2.png)
+  ![alt text](images/output3.png)
   
 2. Count the number of department categories accessed in every 10 secs of time  
  
-  ![alt text](images/output.png)
-  ![alt text](images/output.png)
+  ![alt text](images/output4.png)
+  ![alt text](images/output5.png)
   
 3. Display number of times hosts who made requests to the server in every 10 secs
 
-   ![alt text](images/output.png)
+   ![alt text](images/output6.png)
    
 4. Find Total count of different response codes returned by the server per 10 secs
 
-   ![alt text](images/output.png)
+   ![alt text](images/output7.png)
    
 ## Future Possibilities
 
